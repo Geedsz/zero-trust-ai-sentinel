@@ -23,14 +23,14 @@ The system is compartmentalized into four distinct stages to ensure maximum isol
 3. **AI Heuristics (Ollama + Llama 3.1):** A Python script runs as a hidden, highly privileged Windows scheduled task every 5 minutes. It extracts the domains and sends them to Llama 3.1 via the local loopback API (`127.0.0.1:11434`) for threat analysis.
 4. **Native Alerting (`ctypes`):** To bypass stripped or "debloated" Windows Action Centers, the script leverages native Windows C-library bindings (`MessageBoxW`) to force an "Always On Top" warning onto the desktop if a threat is detected.
 
-## 💻 Hardware Prerequisites
+##  Hardware Prerequisites
 This system relies on local AI inference and volatile memory allocation. It was engineered and tested on the following high-performance specification:
 * **GPU:** NVIDIA GeForce RTX 4070 Super (Requires adequate VRAM for local 8B parameter model execution)
 * **CPU:** AMD Ryzen 7 7800X3D (Ensures background inference does not interrupt foreground scheduling)
 * **RAM:** 64GB DDR5 (Provides ample overhead to dedicate blocks to the `R:\` RAM disk)
 * **OS:** Windows 11 (Hardened)
 
-## 🛡️ Military-Grade OS Hardening Implementations
+##  Military-Grade OS Hardening Implementations
 To ensure the sentinel script operates in a secure environment, the host OS was subjected to rigorous endpoint hardening aligned with strict operational security (OPSEC) standards:
 
 * **Execution Policy:** Locked via PowerShell (`Set-ExecutionPolicy AllSigned -Scope LocalMachine`) to block all unauthorized and unsigned script execution.
