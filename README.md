@@ -1,6 +1,3 @@
-# zero-trust-ai-sentinel
-An air-gapped, local AI network sentinel that autonomously analyzes DNS query logs for malware, C2 servers, and trackers using Llama 3.1.
-zero-trust-ai-sentinel/
 # Zero-Trust Local AI DNS Sentinel 🛡️
 
 ![Status: Active](https://img.shields.io/badge/Status-Active-success)
@@ -12,12 +9,12 @@ zero-trust-ai-sentinel/
 **Author:** Rocky  
 **Project Type:** Zero-Trust Network Architecture, AI Security Monitoring, OS Hardening  
 
-## Summary
+##  Executive Summary
 The **Zero-Trust Local AI DNS Sentinel** is an air-gapped, locally hosted cybersecurity toolchain designed to autonomously analyze network traffic for malicious activity, telemetry trackers, and Command & Control (C2) servers. 
 
 Rather than relying on static blocklists or cloud-based threat intelligence—which compromise privacy via telemetry leaks—this architecture uses a locally hosted Large Language Model (Llama 3.1) to heuristically analyze DNS queries intercepted by a local AdGuard Home instance. All logs are written to a volatile RAM disk to ensure zero forensic persistence on physical storage.
 
-## 🏗️ System Architecture & Workflow
+##  System Architecture & Workflow
 
 The system is compartmentalized into four distinct stages to ensure maximum isolation and zero-trust execution:
 
