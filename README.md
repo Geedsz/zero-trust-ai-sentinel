@@ -87,4 +87,3 @@ try:
         ctypes.windll.user32.MessageBoxW(0, analysis, "AI DNS Sentinel: Threat Detected", 0x40000 | 0x30)
 except Exception as e:
     pass
-THIS IS TUFF
