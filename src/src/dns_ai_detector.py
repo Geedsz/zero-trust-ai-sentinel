@@ -1,42 +1,89 @@
 import os
 import re
+import json
+import time
 import requests
 import ctypes
+from rich.live import Live
+from rich.table import Table
+from rich.console import Console
+from rich.panel import Panel
 
 LOG_FILE = r"R:\querylog.json"
+WHITELIST_FILE = "whitelist.json"
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
-if not os.path.exists(LOG_FILE):
-    exit()
+console = Console()
 
-domains = set()
-with open(LOG_FILE, "r", encoding="utf-8") as file:
-    for line in file.readlines()[-150:]:
-        match = re.search(r'"QH":"([^"]+)"', line)
-        if match:
-            domains.add(match.group(1))
+if os.path.exists(WHITELIST_FILE):
+    with open(WHITELIST_FILE, "r") as f:
+        whitelist = set(json.load(f))
+else:
+    whitelist = set(["localhost", "127.0.0.1", "github.com"])
+    with open(WHITELIST_FILE, "w") as f:
+        json.dump(list(whitelist), f)
 
-if not domains:
-    exit()
+def generate_dashboard(scanned_count, flagged_domains, latency):
+    table = Table(title="🛡️ Zero-Trust DNS Sentinel [Live]", style="cyan", expand=True)
+    table.add_column("Timestamp", style="dim", width=12)
+    table.add_column("Domains Scanned", justify="right", style="blue")
+    table.add_column("Flagged Threats", style="red")
+    table.add_column("Inference Latency", justify="right", style="green")
+    
+    threat_text = ", ".join(flagged_domains) if flagged_domains else "None (CLEAN)"
+    
+    table.add_row(
+        time.strftime("%H:%M:%S"),
+        str(scanned_count),
+        threat_text,
+        f"{latency:.2f}s"
+    )
+    return Panel(table, border_style="green")
 
-prompt_text = (
-    "You are a network privacy assistant. "
-    "Review these requested DNS domains and flag any that look like advertising networks, "
-    "telemetry trackers, or suspicious data collection sites. "
-    "Reply ONLY with the flagged domains separated by commas. "
-    "If all domains look like normal websites, reply EXACTLY with the word 'CLEAN'. "
-    f"Domains: {', '.join(domains)}"
-)
+def run_sentinel():
+    if not os.path.exists(LOG_FILE):
+        return 0, [], 0.0
 
-payload = {"model": "llama3.1", "prompt": prompt_text, "stream": False}
+    domains = set()
+    with open(LOG_FILE, "r", encoding="utf-8") as file:
+        for line in file.readlines()[-150:]:
+            match = re.search(r'"QH":"([^"]+)"', line)
+            if match:
+                domain = match.group(1)
+                if domain not in whitelist:
+                    domains.add(domain)
 
-try:
-    response = requests.post(OLLAMA_URL, json=payload, timeout=45).json()
-    analysis = response.get("response", "").strip()
+    if not domains:
+        return 0, [], 0.0
 
-    if "CLEAN" not in analysis.upper() and analysis:
-        # Native Windows Message Box (Bypasses Debloated Notification Center)
-        # 0x40000 = Always on top | 0x30 = Warning Icon
-        ctypes.windll.user32.MessageBoxW(0, analysis, "AI DNS Sentinel: Threat Detected", 0x40000 | 0x30)
-except Exception as e:
-    pass
+    prompt_text = (
+        "You are a network privacy assistant. "
+        "Review these requested DNS domains and flag any that look like advertising networks, "
+        "telemetry trackers, or suspicious data collection sites. "
+        "Reply ONLY with the flagged domains separated by commas. "
+        "If all domains look like normal websites, reply EXACTLY with the word 'CLEAN'. "
+        f"Domains: {', '.join(domains)}"
+    )
+
+    payload = {"model": "llama3.1", "prompt": prompt_text, "stream": False}
+    
+    start_time = time.time()
+    try:
+        response = requests.post(OLLAMA_URL, json=payload, timeout=45).json()
+        analysis = response.get("response", "").strip()
+        latency = time.time() - start_time
+
+        flagged = []
+        if "CLEAN" not in analysis.upper() and analysis:
+            flagged = [d.strip() for d in analysis.split(",") if d.strip()]
+            ctypes.windll.user32.MessageBoxW(0, f"Threats Detected:\n{analysis}", "AI DNS Sentinel", 0x40000 | 0x30)
+            
+        return len(domains), flagged, latency
+    except Exception:
+        return len(domains), ["Ollama Connection Error"], time.time() - start_time
+
+with Live(generate_dashboard(0, [], 0.0), refresh_per_second=1) as live:
+    while True:
+        scanned, flags, lat = run_sentinel()
+        live.update(generate_dashboard(scanned, flags, lat))
+        time.sleep(10)
