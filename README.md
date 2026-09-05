@@ -1,4 +1,4 @@
-# Zero-Trust Local AI DNS Sentinel 🛡️
+# Zero-Trust Local AI DNS Sentinel
 
 ![Status: Active](https://img.shields.io/badge/Status-Active-success)
 ![Platform: Windows 11](https://img.shields.io/badge/Platform-Windows_11-blue)
@@ -87,3 +87,4 @@ try:
         ctypes.windll.user32.MessageBoxW(0, analysis, "AI DNS Sentinel: Threat Detected", 0x40000 | 0x30)
 except Exception as e:
     pass
+THIS IS TUFF
