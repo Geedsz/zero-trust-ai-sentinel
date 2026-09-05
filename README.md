@@ -39,7 +39,7 @@ To ensure the sentinel script operates in a secure environment, the host OS was 
 * **Data Execution Prevention (DEP):** Forced on globally via system registry policies to prevent buffer overflow execution.
 * **Encryption:** Active TPM 2.0 configuration with forced pre-boot BitLocker PIN authentication to thwart physical DMA (Direct Memory Access) attacks.
 
-## 🛠️ Core Components & Code
+##  Core Components & Code
 
 ### 1. The Sentinel Script (`src/dns_ai_detector.py`)
 This script operates completely invisibly, extracting the last 150 DNS queries from the volatile RAM disk and executing the Llama 3.1 safety prompt. 
