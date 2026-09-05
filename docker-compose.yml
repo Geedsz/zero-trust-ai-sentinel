@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ai-sentinel:
+    build: .
+    container_name: zero-trust-sentinel
+    volumes:
+      - R:\:/ramdisk:ro 
+      - ./whitelist.json:/app/whitelist.json 
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    network_mode: "host"
+    restart: unless-stopped
